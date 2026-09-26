@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — SMM PRO</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0b0b0c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <!-- Admin kirish oynasi -->
+  <main class="auth-page" id="loginView" hidden>
+    <section class="auth-side">
+      <a class="brand" href="/admin"><span class="brand-mark">SP</span><span class="brand-name">SMM <span>PRO</span></span></a>
+      <div>
+        <h1>Boshqaruv <em>paneli</em></h1>
+        <p>O'quvchilarni qo'shing, darslarni yuklang va har bir o'quvchining natijasini kuzating.</p>
+      </div>
+      <div class="auth-foot">Faqat administratorlar uchun</div>
+    </section>
+    <section class="auth-main">
+      <form class="auth-box" id="adminLoginForm" novalidate>
+        <h2>Admin sifatida kirish</h2>
+        <p>Cloudflare'da o'rnatilgan ADMIN_LOGIN va ADMIN_PASSWORD bilan kiring.</p>
+        <div class="field"><label for="aLogin">Login</label><input class="input" id="aLogin" autocomplete="username" autocapitalize="none"></div>
+        <div class="field"><label for="aPass">Parol</label><input class="input" id="aPass" type="password" autocomplete="current-password"></div>
+        <div class="error-text" id="aErr" role="alert"></div>
+        <button class="btn btn-primary btn-block" type="submit">Kirish</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Admin ilovasi -->
+  <div class="admin-shell" id="appView" hidden>
+    <aside class="sidebar">
+      <div>
+        <a class="brand" href="/admin"><span class="brand-mark">SP</span><span class="brand-name">SMM <span>PRO</span></span></a>
+        <div class="tag" style="margin-top:6px">Admin panel</div>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-foot">
+        <span id="adminName" style="padding:0 12px"></span>
+        <a class="btn btn-ghost btn-sm" href="/" target="_blank" rel="noopener">O'quvchi sahifasini ochish</a>
+        <button class="btn btn-ghost btn-sm" id="adminLogout">Chiqish</button>
+      </div>
+    </aside>
+    <div class="mobile-bar"><nav class="nav" id="navMobile"></nav></div>
+    <main class="admin-main" id="main"></main>
+  </div>
+
+  <div id="modalRoot"></div>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

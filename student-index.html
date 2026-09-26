@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mening kursim — SMM PRO</title>
+  <meta name="theme-color" content="#0b0b0c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="brand" href="/" aria-label="SMM PRO bosh sahifa">
+        <span class="brand-mark">SP</span>
+        <span class="brand-name">SMM <span>PRO</span></span>
+      </a>
+      <div class="user-chip">
+        <span class="avatar" id="avatar"></span>
+        <span class="name" id="userName"></span>
+        <button class="icon-btn" id="logoutBtn" aria-label="Chiqish" title="Chiqish"></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="app">
+    <div class="empty" id="loading">Yuklanmoqda…</div>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const app = document.getElementById('app');
+    document.getElementById('logoutBtn').innerHTML = ICONS.logout;
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await api('/api/logout', { method: 'POST' }).catch(() => {});
+      location.replace('/login');
+    });
+
+    function lessonRow(l, currentId) {
+      const isCurrent = l.id === currentId;
+      const cls = l.completed ? 'done' : (!l.unlocked ? 'locked' : (isCurrent ? 'current' : ''));
+      const icon = l.completed ? ICONS.check : (l.unlocked ? ICONS.play : ICONS.lock);
+      const meta = [];
+      meta.push(`${l.index}-dars`);
+      if (l.duration_sec) meta.push(fmtDuration(l.duration_sec));
+      let right = '';
+      if (l.completed) right = '<span class="badge badge-lime">Ko\'rildi</span>';
+      else if (l.unlocked && l.percent > 0) right = `<div class="mini-progress progress"><span style="width:${l.percent}%"></span></div><span class="small muted">${l.percent}%</span>`;
+      else if (l.unlocked) right = isCurrent ? '<span class="badge badge-lime">Navbatdagi</span>' : '';
+      else right = '<span class="small muted">Yopiq</span>';
+      const inner = `
+        <span class="state" aria-hidden="true">${icon}</span>
+        <span><div class="title">${esc(l.title)}</div><div class="meta">${meta.map(esc).join('<span>·</span>')}</div></span>
+        <span class="right">${right}</span>`;
+      if (!l.unlocked) {
+        return `<div class="lesson-row locked" title="Avval oldingi darsni oxirigacha ko'ring">${inner}</div>`;
+      }
+      return `<a class="lesson-row ${cls}" href="/lesson/${l.id}">${inner}</a>`;
+    }
+
+    async function load() {
+      try {
+        const { user } = await api('/api/me');
+        document.getElementById('userName').textContent = user.full_name;
+        document.getElementById('avatar').textContent = initials(user.full_name);
+        const data = await api('/api/course');
+        render(user, data);
+      } catch (e) {
+        if (e.status === 401) return location.replace('/login');
+        app.innerHTML = `<div class="empty"><h3>Ma'lumotni yuklab bo'lmadi</h3><p>${esc(e.message)}</p><button class="btn" onclick="location.reload()">Qayta urinish</button></div>`;
+      }
+    }
+
+    function render(user, data) {
+      const { sections, summary } = data;
+      if (!sections.length) {
+        app.innerHTML = `<div class="empty"><h3>Darslar tez orada qo'shiladi</h3><p>Kurs materiallari yuklanganidan so'ng shu yerda ko'rinadi.</p></div>`;
+        return;
+      }
+      const all = sections.flatMap(s => s.lessons);
+      const next = all.find(l => l.id === summary.next_lesson_id);
+      const firstName = user.full_name.split(/\s+/)[0];
+      const finished = summary.done === summary.total;
+      const heading = finished ? `Tabriklaymiz, ${esc(firstName)}!` : (summary.done ? `Davom etamiz, ${esc(firstName)}` : `Xush kelibsiz, ${esc(firstName)}`);
+      const sub = finished ? "Siz kursdagi barcha darslarni ko'rib chiqdingiz." : `${summary.total} ta darsdan ${summary.done} tasi ko'rildi`;
+
+      app.innerHTML = `
+        <section class="hero">
+          <div style="position:relative;z-index:1">
+            <div class="eyebrow">SMM PRO kursi</div>
+            <h1>${heading}</h1>
+            <p class="sub">${sub}</p>
+            <div class="hero-progress">
+              <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${summary.percent}"><span style="width:${summary.percent}%"></span></div>
+              <b>${summary.percent}%</b>
+            </div>
+          </div>
+          ${next ? `
+          <div class="hero-next">
+            <span class="label">${summary.done ? 'Keyingi dars' : 'Birinchi dars'}</span>
+            <span class="next-title">${esc(next.title)}</span>
+            <a class="btn btn-primary" href="/lesson/${next.id}">${next.percent > 0 ? 'Davom etish' : (summary.done ? 'Darsni boshlash' : 'Kursni boshlash')} ${ICONS.next}</a>
+          </div>` : ''}
+        </section>
+        ${sections.map((s, i) => {
+          const done = s.lessons.filter(l => l.completed).length;
+          return `
+          <section class="section-block">
+            <div class="section-head">
+              <h2><span class="section-num">${String(i + 1).padStart(2, '0')}</span>${esc(s.title)}</h2>
+              <span class="count">${done}/${s.lessons.length} dars</span>
+            </div>
+            <div class="lesson-list">${s.lessons.map(l => lessonRow(l, summary.next_lesson_id)).join('')}</div>
+          </section>`;
+        }).join('')}
+      `;
+    }
+
+    load();
+  </script>
+</body>
+</html>

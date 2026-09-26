@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kirish — SMM PRO</title>
+  <meta name="theme-color" content="#0b0b0c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-side">
+      <a class="brand" href="/login" aria-label="SMM PRO">
+        <span class="brand-mark">SP</span>
+        <span class="brand-name">SMM <span>PRO</span></span>
+      </a>
+      <div>
+        <h1>Bilimni <em>amalda</em> sinaydigan kurs</h1>
+        <p>Darslar ketma-ket ochiladi: har bir darsni oxirigacha ko'rib, keyingisiga o'tasiz.</p>
+        <ul class="auth-points">
+          <li>Video darslar bo'limlar bo'yicha</li>
+          <li>Qayerda to'xtaganingiz saqlanadi</li>
+          <li>Telefon va kompyuterda ishlaydi</li>
+        </ul>
+      </div>
+      <div class="auth-foot">@eplabyoz</div>
+    </section>
+
+    <section class="auth-main">
+      <form class="auth-box" id="loginForm" novalidate>
+        <h2>Platformaga kirish</h2>
+        <p>Login va parolni kurs administratori beradi.</p>
+        <div class="field">
+          <label for="login">Login</label>
+          <input class="input" id="login" name="login" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="masalan: aziz.karimov" required>
+        </div>
+        <div class="field">
+          <label for="password">Parol</label>
+          <div class="pass-wrap">
+            <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+            <button class="icon-btn" type="button" id="togglePass" aria-label="Parolni ko'rsatish"></button>
+          </div>
+        </div>
+        <div class="error-text" id="err" role="alert"></div>
+        <button class="btn btn-primary btn-block" type="submit" id="submitBtn">Kirish</button>
+        <div class="auth-help">Login yoki parolni unutdingizmi? Kurs administratoriga yozing.</div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/common.js"></script>
+  <script>
+    const form = document.getElementById('loginForm');
+    const err = document.getElementById('err');
+    const btn = document.getElementById('submitBtn');
+    const pass = document.getElementById('password');
+    const toggle = document.getElementById('togglePass');
+    toggle.innerHTML = ICONS.eye;
+    toggle.addEventListener('click', () => {
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+      toggle.setAttribute('aria-label', pass.type === 'password' ? "Parolni ko'rsatish" : 'Parolni yashirish');
+    });
+    ['login', 'password'].forEach(id => document.getElementById(id).addEventListener('input', () => { err.textContent = ''; }));
+
+    // Allaqachon kirgan bo'lsa — kabinetga
+    api('/api/me').then(() => location.replace('/')).catch(() => {});
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const login = form.login.value.trim();
+      const password = form.password.value;
+      if (!login || !password) { err.textContent = 'Login va parolni kiriting'; return; }
+      btn.disabled = true;
+      btn.textContent = 'Tekshirilmoqda…';
+      try {
+        await api('/api/login', { method: 'POST', body: { login, password } });
+        location.replace('/');
+      } catch (ex) {
+        err.textContent = ex.message;
+        btn.disabled = false;
+        btn.textContent = 'Kirish';
+      }
+    });
+  </script>
+</body>
+</html>

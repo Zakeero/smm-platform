@@ -1,0 +1,18 @@
+{
+  "name": "smm-pro-platform",
+  "version": "2.0.0",
+  "description": "SMM PRO online kurs platformasi — Cloudflare Workers + D1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.45.0"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "smm-platform",
+  "main": "worker.js",
+
+  // Deploy oldidan sahifalarni dist/ papkasiga yig'adi (build.js)
+  "build": { "command": "node build.js" },
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+
+  // Statik sahifalar (o'quvchi va admin panellari)
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+
+  // Ma'lumotlar bazasi. database_id yozilmagan — birinchi deploy'da Cloudflare o'zi yaratadi.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "smm-pro-db" }
+  ],
+
+  // Dashboard'da qo'shilgan o'zgaruvchilar har deploy'da o'chib ketmasligi uchun
+  "keep_vars": true,
+
+  "vars": {
+    "ADMIN_LOGIN": "admin",
+    "COMPLETE_RATIO": "0.9"
+  }
+}
